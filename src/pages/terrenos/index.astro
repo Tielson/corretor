@@ -1,0 +1,44 @@
+---
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { published } from '@/data';
+import { buildCatalogProps } from '@/lib/catalog-props';
+import Catalogo from '@/components/react/catalog/Catalogo';
+import MapaCatalogo from '@/components/react/map/MapaCatalogo';
+import { catalogPoints } from '@/lib/map-points';
+import BuscaGuiada from '@/components/react/BuscaGuiada';
+
+const props = await buildCatalogProps(published, {
+  referenceCity: site.cidadeReferencia.nome,
+  base: {},
+  path: '/terrenos/',
+  siteUrl: site.siteUrl,
+});
+---
+
+<Base
+  title="Terrenos e empreendimentos"
+  description="Catálogo de terrenos rurais e urbanos com filtros por região, preço, área, relevo, acesso e infraestrutura existente."
+>
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <h1 class="type-display text-4xl">Terrenos e empreendimentos</h1>
+    <p class="mt-3 max-w-[60ch] text-grafite/80">
+      Todos os anúncios do catálogo, com prioridade para as opções no campo. Os filtros ficam no endereço da página para
+      você compartilhar a busca.
+    </p>
+    <details class="group mt-6 rounded-2xl bg-areia-100 p-4 sm:p-5">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-[600] text-mata [&::-webkit-details-marker]:hidden">
+        Não sabe por onde começar? Responda quatro perguntas
+        <span aria-hidden="true" class="transition-transform group-open:rotate-45">+</span>
+      </summary>
+      <div class="mt-4">
+        <BuscaGuiada client:visible listings={props.listings} cards={props.cards} regioes={props.options.locais} />
+      </div>
+    </details>
+    <div class="mt-8">
+      <Catalogo client:load {...props}>
+        <MapaCatalogo slot="map" client:only="react" points={catalogPoints(published)} />
+      </Catalogo>
+    </div>
+  </div>
+</Base>

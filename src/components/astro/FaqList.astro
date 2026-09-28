@@ -1,0 +1,39 @@
+---
+import type { Faq } from '@/types/faq';
+
+interface Props {
+  items: Faq[];
+  /** Mostra links para as seções relacionadas (âncoras). */
+  withAnchors?: boolean;
+  /** Prefixo do caminho para as âncoras (ex.: página do anúncio). */
+  anchorBase?: string;
+}
+
+const { items, withAnchors = true, anchorBase = '' } = Astro.props;
+---
+
+<div class="divide-y divide-border border-y border-border">
+  {
+    items.map((f) => (
+      <details class="group py-1" id={`faq-${f.id}`}>
+        <summary class="flex cursor-pointer list-none items-start justify-between gap-4 py-3.5 text-[1.02rem] font-[560] text-grafite [&::-webkit-details-marker]:hidden">
+          {f.question}
+          <span
+            aria-hidden="true"
+            class="mt-1 grid size-5 shrink-0 place-items-center rounded-full border border-input text-[0.8rem] text-mata transition-transform group-open:rotate-45"
+          >
+            +
+          </span>
+        </summary>
+        <div class="max-w-[68ch] pb-4 text-grafite/85">
+          <p>{f.answer}</p>
+          {withAnchors && f.anchor && (
+            <a href={`${anchorBase}#${f.anchor}`} class="mt-2 inline-block text-[0.9rem] text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata">
+              Ver a seção relacionada
+            </a>
+          )}
+        </div>
+      </details>
+    ))
+  }
+</div>

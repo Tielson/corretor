@@ -1,0 +1,377 @@
+---
+/**
+ * Página de detalhe (terreno e empreendimento). Todo o conteúdo de venda está
+ * no HTML estático; mapa, planta interativa, vídeo e formulários são ilhas.
+ */
+import Base from '@/layouts/Base.astro';
+import type { Listing } from '@/types/listing';
+import { isEmpreendimento } from '@/types/listing';
+import { site } from '@/config/site';
+import { absoluteUrl } from '@/lib/seo';
+import { listingSeo } from '@/lib/listing-seo';
+import { ogImageFor } from '@/lib/card-images';
+import { ACCESS_TYPE_LABEL, RELIEF_LABEL, ZONE_LABEL, KIND_LABEL, detailPath, priceInfo, areaInfo } from '@/lib/listing';
+import { formatCents } from '@/lib/money';
+import { formatDateLong } from '@/lib/date';
+import { messages } from '@/lib/whatsapp';
+import { summarizeLots } from '@/lib/lots';
+import { relatedListings } from '@/data';
+import Gallery from './Gallery.astro';
+import InfoRow from './InfoRow.astro';
+import ReguaArea from './ReguaArea.astro';
+import Trajeto from './Trajeto.astro';
+import FichaTransparencia from './FichaTransparencia.astro';
+import FichaDecisao from './FichaDecisao.astro';
+import InfraGroups from './InfraGroups.astro';
+import CondicoesComerciais from './CondicoesComerciais.astro';
+import LocalizacaoInfo from './LocalizacaoInfo.astro';
+import LotesLista from './LotesLista.astro';
+import Videos from './Videos.astro';
+import FaqList from './FaqList.astro';
+import ListingCard from './ListingCard.astro';
+import WaButton from './WaButton.astro';
+import BarraMobile from './BarraMobile.astro';
+import FormWhatsApp from '@/components/react/FormWhatsApp';
+import SolicitarVisita from '@/components/react/SolicitarVisita';
+import BuscaFaq from '@/components/react/BuscaFaq';
+import FavoritoButton from '@/components/react/FavoritoButton';
+import CompararButton from '@/components/react/CompararButton';
+import Compartilhar from '@/components/react/Compartilhar';
+import { faqGeral } from '@/data/faq-geral';
+import { LotBar } from '@/components/react/LotBar';
+import PlantaInterativa from '@/components/react/planta/PlantaInterativa';
+import MapaDetalhe from '@/components/react/map/MapaDetalhe';
+import { detailPoints } from '@/lib/map-points';
+
+interface Props {
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+const path = detailPath(listing);
+const url = absoluteUrl(path);
+const seo = listingSeo(listing);
+const og = await ogImageFor(listing.media[0]);
+const askRef = { kind: listing.kind, title: listing.title, code: listing.code, url };
+const f = listing.features;
+const a = areaInfo(listing);
+const p = priceInfo(listing);
+const priceText = p.cents === null ? 'Sob consulta' : `${p.mode === 'a_partir_de' ? 'A partir de ' : ''}${formatCents(p.cents)}`;
+const related = relatedListings(listing);
+const anuncioMsg = messages.anuncio({ kind: listing.kind, title: listing.title, code: listing.code, url });
+const visitaMsg = messages.visita({ kind: listing.kind, title: listing.title, code: listing.code, url });
+const docMsg = messages.duvida({ subject: 'documentação', listing: askRef });
+const emp = isEmpreendimento(listing) ? listing : null;
+
+const nav = [
+  { id: 'resumo', label: 'Resumo' },
+  ...(emp ? [{ id: 'lotes', label: 'Lotes' }] : []),
+  { id: 'acesso', label: 'Acesso' },
+  { id: 'caracteristicas', label: 'Características' },
+  { id: 'infraestrutura', label: 'Infraestrutura' },
+  { id: 'condicoes', label: 'Condições' },
+  { id: 'documentacao', label: 'Documentação' },
+  { id: 'localizacao', label: 'Localização' },
+  ...(listing.videos.length ? [{ id: 'videos', label: 'Vídeos' }] : []),
+  { id: 'duvidas', label: 'Dúvidas' },
+];
+
+const extraEntries = Object.entries(f.extra);
+---
+
+<Base
+  title={seo.title}
+  description={seo.description}
+  image={og}
+  imageAlt={listing.media[0]?.alt ?? null}
+  type="article"
+  withMobileBar
+>
+  <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+    <nav aria-label="Trilha" class="text-[0.85rem] text-nevoa">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li><a href="/" class="hover:text-mata">Início</a></li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a href={emp ? '/empreendimentos/' : '/terrenos/'} class="hover:text-mata">{emp ? 'Empreendimentos' : 'Terrenos'}</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-grafite">{listing.title}</li>
+      </ol>
+    </nav>
+
+    <div class="mt-4">
+      <Gallery listing={listing} />
+    </div>
+
+    <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div class="min-w-0">
+        <header>
+          <p class="text-[0.9rem] text-folha">
+            {KIND_LABEL[listing.kind]} {ZONE_LABEL[listing.zone].toLowerCase()} em {listing.municipio}, {listing.uf}
+            {listing.regiao && <span class="text-nevoa"> ({listing.regiao})</span>}
+          </p>
+          <h1 class="type-display mt-2 text-3xl sm:text-4xl">{listing.title}</h1>
+          <p class="mt-4 max-w-[62ch] text-lg text-grafite/85">{listing.summary}</p>
+          <p class="type-data mt-3 text-[0.85rem] text-nevoa">
+            Código {listing.code}. Atualizado em {formatDateLong(listing.updatedAt)}.
+          </p>
+        </header>
+
+        <FichaDecisao listing={listing} class="mt-6 lg:hidden">
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-1 border-t border-border pt-3">
+            <FavoritoButton client:visible id={listing.id} title={listing.title} variant="inline" />
+            <CompararButton client:visible id={listing.id} title={listing.title} />
+            <Compartilhar client:visible title={listing.title} url={url} text={listing.summary} />
+          </div>
+        </FichaDecisao>
+
+        <nav
+          aria-label="Seções do anúncio"
+          class="sticky top-16 z-30 -mx-4 mt-8 border-b border-border bg-cal/95 px-4 backdrop-blur-md sm:-mx-6 sm:px-6"
+        >
+          <ul class="scrollbar-none flex gap-1 overflow-x-auto py-2 text-[0.9rem]">
+            {
+              nav.map((n) => (
+                <li class="shrink-0">
+                  <a href={`#${n.id}`} class="block rounded-md px-3 py-1.5 text-grafite/80 hover:bg-areia-100 hover:text-mata">
+                    {n.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+
+        <section id="resumo" class="scroll-mt-32 pt-10" aria-labelledby="resumo-t">
+          <h2 id="resumo-t" class="text-2xl">Resumo</h2>
+          <div class="mt-5 grid gap-5 md:grid-cols-[1.1fr_1fr]">
+            {a ? <ReguaArea minM2={a.minM2} maxM2={a.maxM2} /> : <p class="rounded-2xl bg-areia-100 p-5 text-nevoa">Nenhum lote disponível no momento.</p>}
+            <dl class="grid grid-cols-2 content-start gap-x-4 gap-y-3 text-[0.95rem]">
+              <div><dt class="text-[0.8rem] text-nevoa">Tipo</dt><dd>{KIND_LABEL[listing.kind]}</dd></div>
+              <div><dt class="text-[0.8rem] text-nevoa">Localização</dt><dd>{ZONE_LABEL[listing.zone]}</dd></div>
+              <div><dt class="text-[0.8rem] text-nevoa">Relevo</dt><dd>{f.relief ? RELIEF_LABEL[f.relief] : <span class="italic text-nevoa">Não informado</span>}</dd></div>
+              <div><dt class="text-[0.8rem] text-nevoa">Acesso</dt><dd>{f.accessType ? ACCESS_TYPE_LABEL[f.accessType] : <span class="italic text-nevoa">Não informado</span>}</dd></div>
+              <div><dt class="text-[0.8rem] text-nevoa">Água</dt><dd>{f.water ? 'Informada' : <span class="italic text-nevoa">Não informada</span>}</dd></div>
+              <div><dt class="text-[0.8rem] text-nevoa">Energia</dt><dd>{f.energy ? 'Informada' : <span class="italic text-nevoa">Não informada</span>}</dd></div>
+              <div class="col-span-2"><dt class="text-[0.8rem] text-nevoa">Disponibilidade informada</dt><dd>{listing.availability ?? <span class="italic text-nevoa">Não informada</span>}</dd></div>
+            </dl>
+          </div>
+          <div class="mt-8 max-w-[68ch] space-y-4 text-grafite/90">
+            <p>{listing.description}</p>
+            {
+              listing.regionInfo && (
+                <>
+                  <h3 class="pt-2 text-lg">Sobre a região</h3>
+                  <p>{listing.regionInfo}</p>
+                </>
+              )
+            }
+            {listing.highlights.length > 0 && (
+              <ul class="flex flex-wrap gap-2 pt-1">
+                {listing.highlights.map((h) => <li class="rounded-md bg-folha-100 px-2.5 py-1 text-[0.88rem] text-mata">{h}</li>)}
+              </ul>
+            )}
+          </div>
+          <div class="mt-8">
+            <FichaTransparencia listing={listing} url={url} />
+          </div>
+        </section>
+
+        {
+          emp && (
+            <section id="lotes" class="scroll-mt-32 pt-14" aria-labelledby="lotes-t">
+              <h2 id="lotes-t" class="text-2xl">Lotes e planta</h2>
+              <p class="mt-2 max-w-[62ch] text-grafite/80">
+                Situação dos lotes na última atualização. Preço e área de referência consideram apenas lotes disponíveis.
+              </p>
+              <LotBar summary={summarizeLots(emp.lots)} detailed className="mt-5" />
+              <div class="mt-6" data-planta>
+                <PlantaInterativa client:visible title={emp.title} code={emp.code} url={url} lots={emp.lots} plan={emp.plan} />
+                {emp.plan?.demonstrativa && (
+                  <p class="mt-3 text-[0.85rem] text-nevoa">
+                    Planta demonstrativa, fora de escala. Não é levantamento técnico; confirme medidas e confrontações com o corretor.
+                  </p>
+                )}
+                {(emp.plan?.imageUrl || emp.plan?.pdfUrl) && (
+                  <div class="mt-4 flex flex-wrap gap-3">
+                    <h3 class="sr-only">Materiais disponíveis</h3>
+                    {emp.plan?.imageUrl && (
+                      <a href={emp.plan.imageUrl} download class="inline-flex h-10 items-center rounded-[10px] border border-input px-4 text-[0.92rem] font-[560] text-mata hover:bg-areia-100">
+                        Baixar planta (imagem)
+                      </a>
+                    )}
+                    {emp.plan?.pdfUrl && (
+                      <a href={emp.plan.pdfUrl} download class="inline-flex h-10 items-center rounded-[10px] border border-input px-4 text-[0.92rem] font-[560] text-mata hover:bg-areia-100">
+                        Baixar planta (PDF)
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div class="mt-8">
+                <h3 class="text-lg">Todos os lotes</h3>
+                <div class="mt-3">
+                  <LotesLista listing={emp} />
+                </div>
+              </div>
+            </section>
+          )
+        }
+
+        <section id="acesso" class="scroll-mt-32 pt-14" aria-labelledby="acesso-t">
+          <h2 id="acesso-t" class="text-2xl">Como chegar</h2>
+          <div class="mt-6"><Trajeto listing={listing} /></div>
+          <dl class="mt-6">
+            <InfoRow label="Rodovia de referência" value={listing.access.highway} listing={askRef} />
+            <InfoRow
+              label="Trecho de estrada de terra"
+              value={listing.access.dirtRoadKm === null ? null : listing.access.dirtRoadKm === 0 ? 'Não há' : `${listing.access.dirtRoadKm.toLocaleString('pt-BR')} km`}
+              listing={askRef}
+            />
+            <InfoRow label="Condições informadas" value={listing.access.conditions} listing={askRef} />
+            <InfoRow label="Ponto de chegada" value={listing.access.arrivalPoint} listing={askRef} />
+          </dl>
+        </section>
+
+        <section id="caracteristicas" class="scroll-mt-32 pt-14" aria-labelledby="car-t">
+          <h2 id="car-t" class="text-2xl">Características</h2>
+          <dl class="mt-4">
+            <InfoRow label="Água" value={f.water} listing={askRef} />
+            <InfoRow label="Energia" value={f.energy} listing={askRef} />
+            <InfoRow label="Internet" value={f.internet} listing={askRef} />
+            <InfoRow label="Relevo" value={f.relief ? RELIEF_LABEL[f.relief] : null} listing={askRef} />
+            <InfoRow label="Cercamento" value={f.fencing} listing={askRef} />
+            <InfoRow label="Tipo de acesso" value={f.accessType ? ACCESS_TYPE_LABEL[f.accessType] : null} listing={askRef} />
+            {extraEntries.map(([k, v]) => <InfoRow label={k} value={v} listing={askRef} />)}
+          </dl>
+        </section>
+
+        <section id="infraestrutura" class="scroll-mt-32 pt-14" aria-labelledby="inf-t">
+          <h2 id="inf-t" class="text-2xl">Infraestrutura</h2>
+          <p class="mt-2 max-w-[62ch] text-grafite/80">
+            Separada entre o que já existe, o que está previsto e o que não foi informado.
+          </p>
+          <div class="mt-5"><InfraGroups infrastructure={listing.infrastructure} /></div>
+        </section>
+
+        <section id="condicoes" class="scroll-mt-32 pt-14" aria-labelledby="cond-t">
+          <h2 id="cond-t" class="text-2xl">Condições comerciais</h2>
+          <div class="mt-5"><CondicoesComerciais listing={listing} askRef={askRef} /></div>
+        </section>
+
+        <section id="documentacao" class="scroll-mt-32 pt-14" aria-labelledby="doc-t">
+          <h2 id="doc-t" class="text-2xl">Documentação</h2>
+          {
+            listing.documents ? (
+              <div class="mt-4 max-w-[68ch] rounded-2xl border border-border bg-card p-5">
+                <p class="text-grafite/90">{listing.documents.text}</p>
+                <p class="mt-3 text-[0.85rem] text-nevoa">
+                  Informação fornecida pelo responsável, atualizada em {formatDateLong(listing.documents.updatedAt)}.
+                </p>
+                <WaButton message={docMsg} variant="secondary" size="sm" class="mt-4">
+                  Esclarecer dúvidas sobre a documentação
+                </WaButton>
+              </div>
+            ) : (
+              <dl class="mt-4">
+                <InfoRow label="Informações documentais" value={null} listing={askRef} />
+              </dl>
+            )
+          }
+        </section>
+
+        <section id="localizacao" class="scroll-mt-32 pt-14" aria-labelledby="loc-t">
+          <h2 id="loc-t" class="text-2xl">Localização</h2>
+          <div class="mt-5 grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+            <div class="h-[26rem] overflow-hidden rounded-2xl border border-border bg-areia-100 xl:h-auto xl:min-h-[26rem]" data-lenis-prevent>
+              <MapaDetalhe client:only="react" points={detailPoints(listing)} approximate={listing.location.precision === 'aproximada'} />
+              <noscript>
+                <div class="grid h-full min-h-[18rem] place-items-center p-6 text-center text-[0.92rem] text-nevoa">
+                  O mapa interativo precisa de JavaScript. Endereço e links do Google Maps estão ao lado.
+                </div>
+              </noscript>
+            </div>
+            <LocalizacaoInfo listing={listing} askRef={askRef} />
+          </div>
+        </section>
+
+        {
+          listing.videos.length > 0 && (
+            <section id="videos" class="scroll-mt-32 pt-14" aria-labelledby="vid-t">
+              <h2 id="vid-t" class="text-2xl">Vídeos</h2>
+              <div class="mt-5"><Videos videos={listing.videos} /></div>
+            </section>
+          )
+        }
+
+        <section id="duvidas" class="scroll-mt-32 pt-14" aria-labelledby="duv-t">
+          <h2 id="duv-t" class="text-2xl">Perguntas sobre este anúncio</h2>
+          <div class="mt-5">
+            <BuscaFaq client:visible items={[...listing.faq, ...faqGeral]} listing={askRef} />
+          </div>
+          <div class="mt-6">
+            {listing.faq.length > 0 ? (
+              <FaqList items={listing.faq} />
+            ) : (
+              <p class="text-grafite/80">Ainda não há perguntas específicas cadastradas para este anúncio.</p>
+            )}
+          </div>
+          <p class="mt-4 text-[0.92rem]">
+            <a href="/duvidas/" class="text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata">
+              Ver dúvidas gerais sobre terrenos e visitas
+            </a>
+          </p>
+        </section>
+
+        <div class="mt-16 grid gap-6 xl:grid-cols-2">
+          <section id="conversar" class="scroll-mt-32 rounded-3xl border border-border bg-card p-5 sm:p-7" aria-labelledby="conv-t">
+            <h2 id="conv-t" class="text-2xl">Conversar sobre {listing.kind === 'empreendimento' ? 'este empreendimento' : 'este terreno'}</h2>
+            <p class="mt-2 text-grafite/80">Escolha os assuntos ou escreva sua pergunta. O site monta a mensagem com o link do anúncio.</p>
+            <div class="mt-5">
+              <FormWhatsApp client:visible mode="anuncio" listing={askRef} />
+              <noscript><WaButton message={anuncioMsg}>Conversar pelo WhatsApp</WaButton></noscript>
+            </div>
+          </section>
+          <section id="visita" class="scroll-mt-32 rounded-3xl border border-border bg-card p-5 sm:p-7" aria-labelledby="vis-t">
+            <h2 id="vis-t" class="text-2xl">Solicitar uma visita</h2>
+            <div class="mt-4">
+              <SolicitarVisita client:visible listing={askRef} />
+              <noscript><WaButton message={visitaMsg} class="mt-4">Solicitar uma visita</WaButton></noscript>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="hidden lg:block" aria-label="Resumo para decisão">
+        <div class="sticky top-24">
+          <FichaDecisao listing={listing}>
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-1 border-t border-border pt-3">
+              <FavoritoButton client:idle id={listing.id} title={listing.title} variant="inline" />
+              <CompararButton client:idle id={listing.id} title={listing.title} />
+              <Compartilhar client:idle title={listing.title} url={url} text={listing.summary} />
+            </div>
+          </FichaDecisao>
+          {site.demo && (
+            <p class="mt-3 px-1 text-[0.8rem] text-nevoa">
+              Anúncio demonstrativo. Dados, preços e imagens são exemplos.
+            </p>
+          )}
+        </div>
+      </aside>
+    </div>
+
+    {
+      related.length > 0 && (
+        <section class="mt-20 border-t border-border pt-12" aria-labelledby="rel-t">
+          <h2 id="rel-t" class="text-2xl">Outras opções parecidas</h2>
+          <div class="mt-6 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((r) => <ListingCard listing={r} />)}
+          </div>
+        </section>
+      )
+    }
+  </div>
+
+  <BarraMobile slot="mobile-bar" priceText={priceText} />
+</Base>

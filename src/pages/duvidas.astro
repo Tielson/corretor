@@ -1,0 +1,72 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import { faqGeral } from '@/data/faq-geral';
+import type { FaqTopic } from '@/types/faq';
+import FaqList from '@/components/astro/FaqList.astro';
+import BuscaFaq from '@/components/react/BuscaFaq';
+
+const textos = (await getCollection('duvidas')).sort((a, b) => a.data.order - b.data.order);
+const rendered = await Promise.all(textos.map(async (t) => ({ entry: t, Content: (await render(t)).Content })));
+
+const TOPIC_LABEL: Record<FaqTopic, string> = {
+  visita: 'Visita',
+  localizacao: 'Localização',
+  acesso: 'Acesso',
+  medidas: 'Medidas',
+  infraestrutura: 'Infraestrutura',
+  condicoes: 'Condições comerciais',
+  documentacao: 'Documentação',
+  geral: 'O que perguntar ao corretor',
+};
+const topics = (Object.keys(TOPIC_LABEL) as FaqTopic[])
+  .map((t) => ({ topic: t, label: TOPIC_LABEL[t], items: faqGeral.filter((f) => f.topic === t) }))
+  .filter((g) => g.items.length > 0);
+---
+
+<Base title="Dúvidas frequentes" description="Respostas curtas sobre visita, localização, acesso, medidas, infraestrutura, condições comerciais e documentação de terrenos rurais.">
+  <div class="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+    <h1 class="type-display text-4xl">Dúvidas frequentes</h1>
+    <p class="mt-4 max-w-[60ch] text-lg text-grafite/80">
+      Respostas curtas com base nas informações do site. Para dúvidas sobre um anúncio específico, veja a seção de perguntas na página dele.
+    </p>
+
+    <div class="mt-10">
+      <BuscaFaq client:load items={faqGeral} />
+    </div>
+
+    <nav aria-label="Temas" class="mt-8">
+      <ul class="flex flex-wrap gap-2">
+        {topics.map((g) => (
+          <li><a href={`#tema-${g.topic}`} class="inline-flex rounded-md border border-input px-3 py-1.5 text-[0.9rem] text-mata hover:bg-areia-100">{g.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    {
+      topics.map((g) => (
+        <section id={`tema-${g.topic}`} class="mt-12 scroll-mt-24" aria-labelledby={`tema-${g.topic}-t`}>
+          <h2 id={`tema-${g.topic}-t`} class="text-2xl">{g.label}</h2>
+          <div class="mt-4">
+            <FaqList items={g.items} withAnchors={false} />
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="mt-16" aria-labelledby="guias-t">
+      <h2 id="guias-t" class="text-2xl">Para entender melhor</h2>
+      <div class="mt-6 grid gap-6">
+        {rendered.map(({ entry, Content }) => (
+          <article class="rounded-2xl border border-border bg-card p-6">
+            <h3 class="text-xl">{entry.data.title}</h3>
+            <p class="mt-1 text-[0.92rem] text-nevoa">{entry.data.summary}</p>
+            <div class="prose-terra mt-4 max-w-[68ch] space-y-3 text-grafite/90 [&_li]:ml-5 [&_li]:list-disc [&_strong]:font-[620] [&_strong]:text-mata [&_ul]:space-y-1.5">
+              <Content />
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>

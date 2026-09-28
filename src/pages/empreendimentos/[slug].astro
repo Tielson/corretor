@@ -1,0 +1,17 @@
+---
+import ListingDetail from '@/components/astro/ListingDetail.astro';
+import { publishedEmpreendimentos } from '@/data';
+import type { Empreendimento } from '@/types/listing';
+
+export function getStaticPaths() {
+  return publishedEmpreendimentos.map((listing) => ({ params: { slug: listing.slug }, props: { listing } }));
+}
+
+interface Props {
+  listing: Empreendimento;
+}
+
+const { listing } = Astro.props;
+---
+
+<ListingDetail listing={listing} />

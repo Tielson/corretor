@@ -1,0 +1,171 @@
+---
+/**
+ * Galeria estática com <Picture>. A primeira imagem carrega cedo; as demais,
+ * sob demanda. Clicar numa foto abre um <dialog> nativo para ampliar
+ * (Esc fecha, setas navegam). Sem JavaScript, a galeria continua legível.
+ */
+import { Picture } from 'astro:assets';
+import type { Listing } from '@/types/listing';
+import { resolveImage } from '@/lib/images';
+
+interface Props {
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+const items = listing.media.map((m) => ({ media: m, meta: resolveImage(m.url) }));
+const [first, ...rest] = items;
+const side = rest.slice(0, 2);
+const more = rest.length - side.length;
+const openBtn = 'absolute inset-0 z-[1] cursor-zoom-in focus-visible:outline-offset-[-4px]';
+---
+
+<div class="grid gap-2 sm:grid-cols-[2fr_1fr] sm:grid-rows-2" data-gallery>
+  {
+    first && (
+      <figure
+        class="relative overflow-hidden rounded-2xl bg-areia-100 sm:row-span-2"
+        style={`view-transition-name: foto-${listing.id}`}
+      >
+        {first.meta ? (
+          <Picture
+            src={first.meta}
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            widths={[640, 960, 1400]}
+            sizes="(min-width: 640px) 66vw, 100vw"
+            alt={first.media.alt}
+            loading="eager"
+            fetchpriority="high"
+            class="aspect-[4/3] size-full object-cover sm:aspect-auto sm:h-[30rem]"
+          />
+        ) : (
+          <div class="grid aspect-[4/3] place-items-center text-nevoa">Imagem indisponível</div>
+        )}
+        <button type="button" class={openBtn} data-open-photo="0" aria-label={`Ampliar foto 1 de ${items.length}`} hidden />
+        <figcaption class="pointer-events-none absolute inset-x-2.5 bottom-2.5 z-[2] flex flex-wrap items-center gap-2 text-[0.75rem]">
+          {first.media.illustrative && <span class="rounded-md bg-grafite/75 px-2 py-0.5 text-cal">Imagem ilustrativa</span>}
+          {first.media.credit && <span class="rounded-md bg-grafite/55 px-2 py-0.5 text-cal/90">{first.media.credit}</span>}
+        </figcaption>
+      </figure>
+    )
+  }
+  {
+    side.map((it, i) => (
+      <figure class="relative hidden overflow-hidden rounded-xl bg-areia-100 sm:block">
+        {it.meta ? (
+          <Picture
+            src={it.meta}
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            widths={[400, 700]}
+            sizes="33vw"
+            alt={it.media.alt}
+            loading="lazy"
+            class="h-[14.75rem] w-full object-cover"
+          />
+        ) : (
+          <div class="grid h-full place-items-center text-nevoa">Imagem indisponível</div>
+        )}
+        <button type="button" class={openBtn} data-open-photo={String(i + 1)} aria-label={`Ampliar foto ${i + 2} de ${items.length}`} hidden />
+        <figcaption class="pointer-events-none absolute bottom-2 left-2 z-[2] flex gap-1.5 text-[0.72rem]">
+          {it.media.type === 'aerea' && <span class="rounded-md bg-grafite/75 px-2 py-0.5 text-cal">Vista aérea</span>}
+          {it.media.illustrative && <span class="rounded-md bg-grafite/75 px-2 py-0.5 text-cal">Ilustrativa</span>}
+        </figcaption>
+        {i === side.length - 1 && more > 0 && (
+          <span class="pointer-events-none absolute right-2 top-2 z-[2] rounded-md bg-cal/90 px-2 py-0.5 text-[0.8rem] font-[560] text-mata">
+            +{more} {more === 1 ? 'foto' : 'fotos'}
+          </span>
+        )}
+      </figure>
+    ))
+  }
+</div>
+{
+  items.length > 1 && (
+    <button
+      type="button"
+      data-open-photo="0"
+      class="mt-3 text-[0.92rem] font-[560] text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata"
+      hidden
+    >
+      Ver todas as {items.length} fotos
+    </button>
+  )
+}
+
+<dialog
+  data-lightbox
+  aria-label={`Fotos de ${listing.title}`}
+  class="m-0 h-dvh max-h-none w-screen max-w-none bg-mata-900/96 p-0 text-cal backdrop:bg-mata-900/80"
+>
+  <div class="flex h-full flex-col">
+    <div class="flex items-center justify-between gap-3 px-4 py-3">
+      <p class="type-data text-[0.9rem] text-areia-100/85" data-lightbox-counter aria-live="polite"></p>
+      <button type="button" data-lightbox-close class="rounded-[10px] border border-cal/25 px-3 py-1.5 text-[0.9rem] hover:bg-cal/10">
+        Fechar
+      </button>
+    </div>
+    <div class="scrollbar-none flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto" data-lightbox-track>
+      {
+        items.map((it) => (
+          <figure class="flex h-full w-full shrink-0 snap-center flex-col items-center justify-center gap-3 px-4 pb-4">
+            {it.meta && (
+              <Picture
+                src={it.meta}
+                formats={['avif', 'webp']}
+            fallbackFormat="webp"
+                widths={[960, 1600]}
+                sizes="100vw"
+                alt={it.media.alt}
+                loading="lazy"
+                class="max-h-[78dvh] w-auto max-w-full rounded-xl object-contain"
+              />
+            )}
+            <figcaption class="max-w-[70ch] text-center text-[0.85rem] text-areia-100/80">
+              {it.media.alt}. {it.media.illustrative ? 'Imagem ilustrativa.' : ''} {it.media.credit ?? ''}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+    <div class="flex justify-center gap-3 pb-5">
+      <button type="button" data-lightbox-prev class="rounded-[10px] border border-cal/25 px-4 py-2 hover:bg-cal/10">Anterior</button>
+      <button type="button" data-lightbox-next class="rounded-[10px] border border-cal/25 px-4 py-2 hover:bg-cal/10">Próxima</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  const track = dialog?.querySelector<HTMLElement>('[data-lightbox-track]');
+  const counter = dialog?.querySelector<HTMLElement>('[data-lightbox-counter]');
+  if (dialog && track && typeof dialog.showModal === 'function') {
+    const slides = () => Array.from(track.children) as HTMLElement[];
+    const current = () => Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+    const update = () => {
+      if (counter) counter.textContent = `Foto ${current() + 1} de ${slides().length}`;
+    };
+    const go = (i: number, smooth = true) => {
+      const n = slides().length;
+      const idx = (i + n) % n;
+      track.scrollTo({ left: idx * track.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+      window.setTimeout(update, smooth ? 350 : 0);
+    };
+    document.querySelectorAll<HTMLButtonElement>('[data-open-photo]').forEach((btn) => {
+      btn.hidden = false; // só aparece com JavaScript
+      btn.addEventListener('click', () => {
+        dialog.showModal();
+        requestAnimationFrame(() => go(Number(btn.dataset.openPhoto ?? 0), false));
+      });
+    });
+    track.addEventListener('scroll', () => window.requestAnimationFrame(update), { passive: true });
+    dialog.querySelector('[data-lightbox-close]')?.addEventListener('click', () => dialog.close());
+    dialog.querySelector('[data-lightbox-prev]')?.addEventListener('click', () => go(current() - 1));
+    dialog.querySelector('[data-lightbox-next]')?.addEventListener('click', () => go(current() + 1));
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') go(current() + 1);
+      if (e.key === 'ArrowLeft') go(current() - 1);
+    });
+  }
+</script>

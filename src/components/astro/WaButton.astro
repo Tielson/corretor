@@ -1,0 +1,36 @@
+---
+import { waLinkFor } from '@/lib/wa-site';
+
+interface Props {
+  message: string;
+  variant?: 'primary' | 'secondary' | 'quiet' | 'on-dark';
+  size?: 'md' | 'sm';
+  class?: string;
+}
+
+const { message, variant = 'primary', size = 'md', class: className } = Astro.props;
+const href = waLinkFor(message);
+const styles = {
+  primary: 'bg-mata text-cal hover:bg-mata-900',
+  secondary: 'border border-input text-mata hover:border-mata hover:bg-areia-100',
+  quiet: 'text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata px-0',
+  'on-dark': 'bg-cal text-mata hover:bg-areia-100',
+};
+const sizes = { md: 'min-h-12 px-5 py-2 text-[0.98rem]', sm: 'min-h-9 px-3.5 py-1.5 text-[0.88rem]' };
+---
+
+<a
+  href={href ?? '#sem-telefone'}
+  data-wa-message={message}
+  target={href ? '_blank' : undefined}
+  rel={href ? 'noopener' : undefined}
+  class:list={[
+    'inline-flex items-center justify-center gap-2 rounded-[10px] text-center font-[560] leading-snug transition-colors',
+    variant !== 'quiet' && sizes[size],
+    variant === 'quiet' && 'h-auto text-[0.92rem]',
+    styles[variant],
+    className,
+  ]}
+>
+  <slot />
+</a>

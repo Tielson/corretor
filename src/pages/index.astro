@@ -1,0 +1,279 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { published } from '@/data';
+import { faqGeral } from '@/data/faq-geral';
+import { homeVideo } from '@/data/home';
+import { sortListings } from '@/lib/sort';
+import { catalogUrl } from '@/lib/url-state';
+import { INTERESSE_LABEL } from '@/lib/listing';
+import { resolveImage } from '@/lib/images';
+import { absoluteUrl } from '@/lib/seo';
+import { messages } from '@/lib/whatsapp';
+import { contourPaths, reliefPins } from '@/lib/relief-data';
+import { creditOf } from '@/data/media';
+import type { Interesse } from '@/types/listing';
+import BuscaRapida from '@/components/astro/BuscaRapida.astro';
+import ListingCard from '@/components/astro/ListingCard.astro';
+import FaqList from '@/components/astro/FaqList.astro';
+import WaButton from '@/components/astro/WaButton.astro';
+import MaqueteRegiao from '@/components/react/MaqueteRegiao';
+import { VideoFacade } from '@/components/react/VideoFacade';
+import FormWhatsApp from '@/components/react/FormWhatsApp';
+import BuscaGuiada from '@/components/react/BuscaGuiada';
+import { buildCatalogProps } from '@/lib/catalog-props';
+import { localOptions } from '@/lib/filters';
+
+const hero = resolveImage('hero-serra.jpg');
+const heroCredit = creditOf('hero-serra.jpg');
+const og = hero ? absoluteUrl((await getImage({ src: hero, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src) : null;
+
+const sorted = sortListings(published, 'destaque');
+const rural = sorted.filter((l) => l.zone === 'rural');
+const destaques = rural.filter((l) => l.featured).slice(0, 3);
+const urbanos = sorted.filter((l) => l.zone === 'urbano');
+
+const interesses: Interesse[] = ['lazer', 'chacara', 'moradia', 'uso_rural'];
+const atalhos = [
+  { label: 'No campo', href: catalogUrl({ zona: 'rural' }), count: rural.length },
+  { label: 'Na cidade', href: catalogUrl({ zona: 'urbano' }), count: urbanos.length },
+  ...interesses.map((i) => ({
+    label: INTERESSE_LABEL[i],
+    href: catalogUrl({ interesse: i }),
+    count: published.filter((l) => l.interesses.includes(i)).length,
+  })),
+].filter((a) => a.count > 0); // só mostra atalho sustentado pelos dados
+
+const contours = contourPaths(64);
+const pins = reliefPins(sorted);
+
+let videoCover: { src: string; width: number; height: number } | null = null;
+if (homeVideo) {
+  const meta = resolveImage(homeVideo.thumbnail);
+  if (meta) {
+    const img = await getImage({ src: meta, width: 1280, format: 'webp', quality: 70 });
+    videoCover = { src: img.src, width: 1280, height: Math.round((1280 * meta.height) / meta.width) };
+  }
+}
+
+const p = site.profissional;
+const guided = await buildCatalogProps(published, { referenceCity: site.cidadeReferencia.nome, base: {}, path: '/terrenos/', siteUrl: site.siteUrl });
+const regioes = localOptions(published);
+const naoEncontrouMsg = messages.naoEncontrou({ texto: 'Procuro um terreno com estas características: ' });
+---
+
+<Base
+  title={site.brand}
+  description="Terrenos e empreendimentos rurais na Serra da Mantiqueira, com acesso, água, energia, lotes e condições explicados antes da visita. Catálogo demonstrativo."
+  image={og}
+  imageAlt={heroCredit.alt}
+>
+  <!-- 2. Foto de destaque e mensagem -->
+  <section class="relative isolate">
+    <div class="relative h-[clamp(30rem,78svh,46rem)] overflow-hidden">
+      {
+        hero && (
+          <Picture
+            src={hero}
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
+            widths={[640, 1024, 1600, 2000]}
+            sizes="100vw"
+            alt={heroCredit.alt}
+            loading="eager"
+            fetchpriority="high"
+            class="absolute inset-0 size-full object-cover object-[50%_60%]"
+          />
+        )
+      }
+      <div class="absolute inset-0 bg-gradient-to-t from-mata-900/85 via-mata-900/25 to-transparent" aria-hidden="true"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-mata-900/55 via-mata-900/15 to-transparent" aria-hidden="true"></div>
+      <div class="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-28 sm:px-6 md:pb-32">
+        <h1 class="type-display max-w-[13ch] text-[clamp(2.5rem,7vw,5.2rem)] text-cal">
+          Seu próximo lugar começa perto da natureza
+        </h1>
+        <p class="mt-5 max-w-[46ch] text-lg text-cal/90">
+          Terrenos e chácaras na Serra da Mantiqueira, com acesso, água, energia e condições explicados antes da visita.
+        </p>
+      </div>
+      <p class="absolute bottom-3 right-4 rounded-md bg-grafite/55 px-2 py-0.5 text-[0.72rem] text-cal/90 backdrop-blur-sm">
+        Imagem ilustrativa. Foto de {heroCredit.photographer} no Unsplash
+      </p>
+    </div>
+
+    <!-- 3. Busca rápida -->
+    <div class="relative z-10 mx-auto -mt-20 max-w-6xl px-4 sm:px-6">
+      <BuscaRapida />
+    </div>
+  </section>
+
+  <!-- 4. Atalhos sustentados pelos dados -->
+  <section class="mx-auto mt-14 max-w-7xl px-4 sm:px-6" aria-labelledby="atalhos-t">
+    <h2 id="atalhos-t" class="sr-only">Atalhos</h2>
+    <ul class="flex flex-wrap gap-x-8 gap-y-3">
+      {
+        atalhos.map((a) => (
+          <li>
+            <a href={a.href} class="group inline-flex items-baseline gap-2 text-[1.15rem] text-mata" style="font-stretch:110%">
+              <span class="border-b-2 border-areia pb-0.5 transition-colors group-hover:border-mata">{a.label}</span>
+              <span class="type-data text-[0.9rem] text-nevoa">{a.count}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- Maquete da região (3D com fallback 2D) -->
+  <section class="mx-auto mt-24 max-w-7xl px-4 sm:px-6" aria-labelledby="regiao-t" id="regiao">
+    <h2 id="regiao-t" class="type-display text-3xl sm:text-4xl">Onde ficam os terrenos</h2>
+    <p class="mt-3 max-w-[58ch] text-grafite/80">
+      Cada pino é um anúncio, posicionado pelas coordenadas cadastradas. O relevo é ilustrativo e fora de escala.
+    </p>
+    <div class="mt-6">
+      <MaqueteRegiao client:visible contours={contours} pins={pins} />
+    </div>
+  </section>
+
+  <!-- 5. Destaques rurais -->
+  <section class="mx-auto mt-28 max-w-7xl px-4 sm:px-6" aria-labelledby="destaques-t">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h2 id="destaques-t" class="type-display text-3xl sm:text-4xl">Em destaque no campo</h2>
+        <p class="mt-3 max-w-[56ch] text-grafite/80">Empreendimentos e terrenos rurais com informações mais completas.</p>
+      </div>
+      <a href={catalogUrl({ zona: 'rural' })} class="font-[560] text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata">
+        Ver os {rural.length} anúncios rurais
+      </a>
+    </div>
+    <div class="mt-10 space-y-16">
+      {destaques[0] && <ListingCard listing={destaques[0]} size="wide" />}
+      <div class="grid gap-12 md:grid-cols-2">
+        {destaques.slice(1).map((l) => <ListingCard listing={l} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Oportunidades urbanas (secundário) -->
+  {
+    urbanos.length > 0 && (
+      <section class="mt-28 bg-areia-100 py-16" aria-labelledby="urbanos-t">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 id="urbanos-t" class="text-2xl">Também na cidade</h2>
+              <p class="mt-2 max-w-[52ch] text-grafite/80">Terrenos e lotes urbanos para quem prefere morar perto de serviços.</p>
+            </div>
+            <a href={catalogUrl({ zona: 'urbano' })} class="font-[560] text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata">
+              Ver anúncios urbanos
+            </a>
+          </div>
+          <div class="mt-8 grid gap-10 lg:grid-cols-2">
+            {urbanos.map((l) => <ListingCard listing={l} size="compact" />)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 7. Vídeo da região -->
+  {
+    homeVideo && (
+      <section class="mx-auto mt-28 max-w-5xl px-4 sm:px-6" aria-labelledby="video-t">
+        <h2 id="video-t" class="type-display text-3xl sm:text-4xl">A região antes da visita</h2>
+        <p class="mt-3 max-w-[56ch] text-grafite/80">Um sobrevoo pela serra para ter noção da paisagem, do relevo e das estradas.</p>
+        <div class="mt-8">
+          <VideoFacade client:visible video={homeVideo} cover={videoCover} />
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 8. Como funciona (sequência real) -->
+  <section class="mx-auto mt-28 max-w-7xl px-4 sm:px-6" aria-labelledby="como-t">
+    <h2 id="como-t" class="type-display text-3xl sm:text-4xl">Como funciona</h2>
+    <ol class="mt-10 grid gap-10 md:grid-cols-3">
+      <li>
+        <span class="type-data text-[2.6rem] font-[300] leading-none text-terra">1</span>
+        <h3 class="mt-3 text-xl">Explore com calma</h3>
+        <p class="mt-2 text-grafite/80">
+          Filtre por região, preço e área, veja o mapa e compare até três opções. Cada anúncio mostra acesso, água, energia e lotes.
+        </p>
+      </li>
+      <li>
+        <span class="type-data text-[2.6rem] font-[300] leading-none text-terra">2</span>
+        <h3 class="mt-3 text-xl">Tire as dúvidas</h3>
+        <p class="mt-2 text-grafite/80">
+          A ficha de cada anúncio mostra o que já foi confirmado e o que ainda falta. Pergunte ao corretor sobre o que importa para você.
+        </p>
+      </li>
+      <li>
+        <span class="type-data text-[2.6rem] font-[300] leading-none text-terra">3</span>
+        <h3 class="mt-3 text-xl">Solicite a visita</h3>
+        <p class="mt-2 text-grafite/80">
+          Envie sua preferência de dia ou período. A data é confirmada com o corretor pelo WhatsApp.
+        </p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Apoio à escolha: busca guiada -->
+  <section class="mx-auto mt-28 max-w-7xl px-4 sm:px-6" aria-labelledby="guiada-t" id="busca-guiada">
+    <div class="rounded-3xl bg-areia-100 p-6 sm:p-10">
+      <h2 id="guiada-t" class="type-display text-3xl">Quatro perguntas para começar</h2>
+      <p class="mt-3 max-w-[60ch] text-grafite/80">
+        Diga o que procura e veja quais anúncios atendem, com a explicação de cada critério. Nada de pontuação escondida.
+      </p>
+      <div class="mt-6">
+        <BuscaGuiada client:visible listings={guided.listings} cards={guided.cards} regioes={regioes} />
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Corretor -->
+  <section class="mx-auto mt-28 max-w-7xl px-4 sm:px-6" aria-labelledby="corretor-t">
+    <div class="grid gap-8 rounded-3xl bg-mata p-6 text-areia-100 sm:p-10 md:grid-cols-[auto_1fr] md:items-center on-dark">
+      <div class="grid size-28 place-items-center rounded-2xl border border-cal/20 bg-mata-900 text-3xl text-cal" style="font-stretch:120%" aria-hidden="true">
+        {p.foto ? <img src={p.foto} alt="" class="size-full rounded-2xl object-cover" /> : <span class="text-[0.8rem] text-areia-100/70" style="font-stretch:100%">Foto não<br />fornecida</span>}
+      </div>
+      <div>
+        <h2 id="corretor-t" class="text-2xl text-cal">{p.nome}</h2>
+        <p class="mt-1 text-[0.92rem] text-areia-100/75">
+          {p.creci ? `CRECI ${p.creci}` : 'Registro profissional (CRECI) não informado'}. Atuação em {site.regiao}.
+        </p>
+        <p class="mt-4 max-w-[62ch] text-areia-100/90">
+          {p.apresentacao ?? 'Apresentação do corretor ainda não fornecida. Este espaço mostra a experiência na região, a forma de atendimento e o que o corretor conhece de cada área.'}
+        </p>
+        <a href="/sobre/" class="mt-5 inline-block font-[560] text-cal underline decoration-cal/30 decoration-2 underline-offset-4 hover:decoration-cal">
+          Conhecer o corretor
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Perguntas frequentes -->
+  <section class="mx-auto mt-28 max-w-4xl px-4 sm:px-6" aria-labelledby="faq-t">
+    <h2 id="faq-t" class="type-display text-3xl sm:text-4xl">Perguntas frequentes</h2>
+    <div class="mt-8">
+      <FaqList items={faqGeral.slice(0, 6)} withAnchors={false} />
+    </div>
+    <a href="/duvidas/" class="mt-5 inline-block font-[560] text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata">
+      Ver todas as dúvidas
+    </a>
+  </section>
+
+  <!-- 11. Não encontrou o que procura? -->
+  <section class="mx-auto mt-28 max-w-7xl px-4 sm:px-6" aria-labelledby="nao-encontrou-t" id="nao-encontrou">
+    <div class="rounded-3xl border border-border bg-card p-6 sm:p-10">
+      <h2 id="nao-encontrou-t" class="type-display text-3xl">Não encontrou o que procura?</h2>
+      <p class="mt-3 max-w-[58ch] text-grafite/80">
+        Conte o que você procura e o site prepara a mensagem para o corretor. Você revisa e envia pelo WhatsApp.
+      </p>
+      <div class="mt-6">
+        <FormWhatsApp client:visible mode="naoEncontrou" regioes={regioes} />
+        <noscript><WaButton message={naoEncontrouMsg}>Preparar mensagem</WaButton></noscript>
+      </div>
+    </div>
+  </section>
+</Base>

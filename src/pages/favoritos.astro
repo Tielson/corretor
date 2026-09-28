@@ -1,0 +1,25 @@
+---
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { published } from '@/data';
+import { buildCatalogProps } from '@/lib/catalog-props';
+import FavoritosLista from '@/components/react/FavoritosLista';
+
+const { cards } = await buildCatalogProps(published, {
+  referenceCity: site.cidadeReferencia.nome,
+  base: {},
+  path: '/terrenos/',
+  siteUrl: site.siteUrl,
+});
+---
+
+<Base title="Favoritos" description="Terrenos e empreendimentos que você marcou como favoritos neste navegador.">
+  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <h1 class="type-display text-4xl">Favoritos</h1>
+    <p class="mt-3 max-w-[60ch] text-grafite/80">Os favoritos ficam salvos só neste navegador, sem cadastro.</p>
+    <div class="mt-10">
+      <FavoritosLista client:load cards={cards} />
+      <noscript>Ative o JavaScript para ver seus favoritos.</noscript>
+    </div>
+  </div>
+</Base>

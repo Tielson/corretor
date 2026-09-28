@@ -1,0 +1,49 @@
+---
+import { site } from '@/config/site';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+const p = site.profissional;
+---
+
+<footer class="on-dark mt-24 bg-mata text-areia-100">
+  <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
+    <div class="max-w-sm">
+      <Logo tone="cal" />
+      <p class="mt-5 text-[0.95rem] text-areia-100/80">
+        Atuação em {site.regiao}. Terrenos avulsos e empreendimentos rurais, com uma seleção secundária de terrenos urbanos.
+      </p>
+      <p class="mt-4 text-[0.85rem] text-areia-100/70">
+        {p.nome}{p.creci ? `, CRECI ${p.creci}` : ', registro profissional não informado'}
+      </p>
+    </div>
+
+    <nav aria-label="Rodapé">
+      <h2 class="text-[0.95rem] text-cal" style="font-stretch:108%">Navegar</h2>
+      <ul class="mt-4 space-y-2 text-[0.95rem]">
+        <li><a class="hover:text-cal" href="/terrenos/">Todos os anúncios</a></li>
+        <li><a class="hover:text-cal" href="/terrenos/?zona=rural">No campo</a></li>
+        <li><a class="hover:text-cal" href="/terrenos/?zona=urbano">Na cidade</a></li>
+        <li><a class="hover:text-cal" href="/empreendimentos/">Empreendimentos</a></li>
+        <li><a class="hover:text-cal" href="/favoritos/">Favoritos</a></li>
+        <li><a class="hover:text-cal" href="/comparar/">Comparar</a></li>
+      </ul>
+    </nav>
+
+    <div>
+      <h2 class="text-[0.95rem] text-cal" style="font-stretch:108%">Contato</h2>
+      <ul class="mt-4 space-y-2 text-[0.95rem] text-areia-100/85">
+        <li>{site.contato.telefoneExibicao || 'Telefone não configurado'}</li>
+        <li>{site.contato.email || 'E-mail não configurado'}</li>
+        {site.contato.endereco && <li>{site.contato.endereco}</li>}
+        <li><a class="underline underline-offset-4 hover:text-cal" href="/duvidas/">Dúvidas frequentes</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-cal/10">
+    <div class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-[0.8rem] text-areia-100/65 sm:px-6 md:flex-row md:justify-between">
+      <p>© {year} {site.brand}. Preços e disponibilidade refletem a última atualização editorial de cada anúncio.</p>
+      {site.demo && <p>Ambiente demonstrativo: fotos ilustrativas via Unsplash, créditos em cada imagem.</p>}
+    </div>
+  </div>
+</footer>

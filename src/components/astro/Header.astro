@@ -1,0 +1,117 @@
+---
+import { site } from '@/config/site';
+import Logo from './Logo.astro';
+
+const nav = [
+  { href: '/terrenos/', label: 'Terrenos' },
+  { href: '/empreendimentos/', label: 'Empreendimentos' },
+  { href: '/sobre/', label: 'Sobre' },
+  { href: '/duvidas/', label: 'Dúvidas' },
+];
+
+const current = Astro.url.pathname;
+const isActive = (href: string) => current === href || current.startsWith(href);
+---
+
+{
+  site.demo && (
+    <div class="bg-mata-900 px-4 py-1.5 text-center text-[0.8rem] text-areia-100">
+      Catálogo demonstrativo: anúncios, preços, plantas e imagens são exemplos e não representam ofertas reais.
+    </div>
+  )
+}
+<header class="sticky top-0 z-40 border-b border-border/80 bg-cal/92 backdrop-blur-md supports-[backdrop-filter]:bg-cal/80">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+    <a href="/" class="rounded-md" aria-label={`${site.brand}, página inicial`}>
+      <Logo />
+    </a>
+
+    <nav aria-label="Principal" class="hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class="rounded-md px-3 py-2 text-[0.95rem] text-grafite/80 transition-colors hover:bg-areia-100 hover:text-mata aria-[current=page]:text-mata aria-[current=page]:font-[620]"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a
+        href="/favoritos/"
+        class="hidden rounded-md px-3 py-2 text-[0.95rem] text-grafite/80 hover:bg-areia-100 hover:text-mata lg:inline-flex"
+        aria-current={isActive('/favoritos/') ? 'page' : undefined}
+      >
+        Favoritos
+      </a>
+      <a
+        href="/sobre/#contato"
+        class="hidden h-10 items-center whitespace-nowrap rounded-[10px] bg-mata px-4 text-[0.95rem] font-[560] text-cal transition-colors hover:bg-mata-900 lg:inline-flex"
+      >
+        Falar com o corretor
+      </a>
+
+      <details class="group relative lg:hidden" data-menu>
+        <summary
+          class="flex h-10 list-none items-center gap-2 rounded-[10px] border border-border px-3 text-[0.95rem] font-[560] text-mata [&::-webkit-details-marker]:hidden"
+          aria-label="Abrir menu"
+        >
+          <svg viewBox="0 0 20 20" class="size-4" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M3 6h14M3 10h14M3 14h9" class="group-open:hidden" />
+            <path d="M5 5l10 10M15 5L5 15" class="hidden group-open:block" />
+          </svg>
+          Menu
+        </summary>
+        <nav
+          aria-label="Principal (celular)"
+          class="absolute right-0 top-12 w-64 rounded-2xl border border-border bg-card p-2 shadow-[0_18px_40px_-18px_rgb(30_58_43/0.45)]"
+        >
+          <ul class="flex flex-col">
+            {
+              [...nav, { href: '/favoritos/', label: 'Favoritos' }, { href: '/comparar/', label: 'Comparar' }].map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                    class="block rounded-lg px-3 py-2.5 text-grafite hover:bg-areia-100 aria-[current=page]:font-[620] aria-[current=page]:text-mata"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li class="mt-1 border-t border-border pt-2">
+              <a href="/sobre/#contato" class="block rounded-lg bg-mata px-3 py-2.5 font-[560] text-cal">
+                Falar com o corretor
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Fecha o menu do celular com Esc e ao clicar fora.
+  const menu = document.querySelector<HTMLDetailsElement>('[data-menu]');
+  if (menu) {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) {
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (menu.open && e.target instanceof Node && !menu.contains(e.target)) menu.open = false;
+    });
+  }
+</script>

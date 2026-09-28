@@ -1,0 +1,70 @@
+---
+import '@/styles/global.css';
+import { buildSeo, type SeoInput } from '@/lib/seo';
+import SeoHead from '@/components/astro/SeoHead.astro';
+import Header from '@/components/astro/Header.astro';
+import Footer from '@/components/astro/Footer.astro';
+import { Toaster } from '@/components/ui/sonner';
+import BandejaComparacao from '@/components/react/BandejaComparacao';
+import { published } from '@/data';
+
+const titles = Object.fromEntries(published.map((l) => [l.id, l.title]));
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string | null;
+  imageAlt?: string | null;
+  type?: SeoInput['type'];
+  /** Reserva espaço para a barra inferior fixa do celular. */
+  withMobileBar?: boolean;
+}
+
+const { title, description, image, imageAlt, type, withMobileBar = false } = Astro.props;
+const seo = buildSeo({ title, description, path: Astro.url.pathname, image, imageAlt, type });
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1e3a2b" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <SeoHead seo={seo} />
+    <slot name="head" />
+  </head>
+  <body class:list={['min-h-dvh', withMobileBar && 'has-mobile-bar']}>
+    <a
+      href="#conteudo"
+      class="sr-only z-50 rounded-md bg-mata px-4 py-2 text-cal focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
+    >
+      Pular para o conteúdo
+    </a>
+    <Header />
+    <main id="conteudo">
+      <slot />
+    </main>
+    <Footer />
+    <slot name="mobile-bar" />
+    <Toaster client:idle />
+    <BandejaComparacao client:idle titles={titles} />
+    <script>
+      import { startSmoothScroll } from '@/lib/smooth-scroll';
+      import '@/scripts/wa-links';
+      startSmoothScroll();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  @media (max-width: 767px) {
+    body.has-mobile-bar {
+      --mobile-bar-h: 4.5rem;
+    }
+    body.has-mobile-bar footer {
+      padding-bottom: calc(var(--mobile-bar-h) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+</style>

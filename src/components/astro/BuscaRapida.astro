@@ -1,0 +1,111 @@
+---
+/**
+ * Busca rápida da home: formulário GET que já funciona sem JavaScript e leva
+ * ao catálogo com os filtros na URL (mesmos parâmetros de src/lib/url-state.ts).
+ */
+import { published } from '@/data';
+import { localOptions } from '@/lib/filters';
+import { formatCentsShort } from '@/lib/money';
+import { formatArea } from '@/lib/area';
+import { AREA_OPTIONS, PRICE_OPTIONS } from '@/data/home';
+
+const locais = localOptions(published);
+const total = published.length;
+const rural = published.filter((l) => l.zone === 'rural').length;
+const urbano = total - rural;
+const selectCls =
+  'h-12 w-full appearance-none rounded-[10px] border border-input bg-cal pl-3 pr-9 text-[0.98rem] text-grafite focus:border-mata';
+---
+
+<form
+  action="/terrenos/"
+  method="get"
+  class="rounded-2xl border border-border bg-card p-4 shadow-[0_24px_60px_-30px_rgb(20_42_30/0.45)] sm:p-5"
+  data-busca-rapida
+  aria-labelledby="busca-rapida-titulo"
+>
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 id="busca-rapida-titulo" class="text-[1.05rem]">Buscar terrenos</h2>
+    <fieldset class="flex rounded-[10px] bg-areia-100 p-1 text-[0.9rem]">
+      <legend class="sr-only">Onde</legend>
+      {
+        [
+          { v: '', label: `Todos (${total})` },
+          { v: 'rural', label: `No campo (${rural})` },
+          { v: 'urbano', label: `Na cidade (${urbano})` },
+        ].map((o, i) => (
+          <label class="relative">
+            <input type="radio" name="zona" value={o.v} checked={i === 0} class="peer sr-only" />
+            <span class="block cursor-pointer rounded-lg px-3 py-1.5 text-grafite/80 peer-checked:bg-cal peer-checked:font-[600] peer-checked:text-mata peer-checked:shadow-sm peer-focus-visible:outline-2 peer-focus-visible:outline-mata">
+              {o.label}
+            </span>
+          </label>
+        ))
+      }
+    </fieldset>
+  </div>
+
+  <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_auto]">
+    <label class="block">
+      <span class="mb-1 block text-[0.82rem] text-nevoa">Cidade ou região</span>
+      <span class="relative block">
+        <select name="local" class={selectCls}>
+          <option value="">Todas as cidades e regiões</option>
+          {locais.map((l) => <option value={l}>{l}</option>)}
+        </select>
+        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-nevoa" aria-hidden="true">▾</span>
+      </span>
+    </label>
+    <label class="block">
+      <span class="mb-1 block text-[0.82rem] text-nevoa">Preço total até</span>
+      <span class="relative block">
+        <select name="pmax" class={selectCls}>
+          <option value="">Qualquer valor</option>
+          {PRICE_OPTIONS.map((v) => <option value={v}>{formatCentsShort(v * 100)}</option>)}
+        </select>
+        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-nevoa" aria-hidden="true">▾</span>
+      </span>
+    </label>
+    <label class="block">
+      <span class="mb-1 block text-[0.82rem] text-nevoa">Área a partir de</span>
+      <span class="relative block">
+        <select name="amin" class={selectCls}>
+          <option value="">Qualquer área</option>
+          {AREA_OPTIONS.map((v) => <option value={v}>{formatArea(v)}</option>)}
+        </select>
+        <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-nevoa" aria-hidden="true">▾</span>
+      </span>
+    </label>
+    <button
+      type="submit"
+      class="h-12 self-end rounded-[10px] bg-mata px-6 font-[600] text-cal transition-colors hover:bg-mata-900 sm:col-span-2 lg:col-span-1"
+    >
+      Ver resultados
+    </button>
+  </div>
+  <p class="mt-3 text-[0.82rem] text-nevoa" data-busca-escopo>A busca considera todos os {total} anúncios do catálogo.</p>
+</form>
+
+<script>
+  // Remove campos vazios para gerar uma URL limpa e atualiza o texto do escopo.
+  const form = document.querySelector<HTMLFormElement>('[data-busca-rapida]');
+  if (form) {
+    const scope = form.querySelector<HTMLElement>('[data-busca-escopo]');
+    const labels: Record<string, string> = {
+      '': 'A busca considera todos os anúncios do catálogo.',
+      rural: 'A busca considera apenas anúncios no campo (rurais).',
+      urbano: 'A busca considera apenas anúncios na cidade (urbanos).',
+    };
+    form.addEventListener('change', () => {
+      const zona = new FormData(form).get('zona')?.toString() ?? '';
+      if (scope) scope.textContent = labels[zona] ?? labels[''];
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const params = new URLSearchParams();
+      for (const [k, v] of new FormData(form)) if (typeof v === 'string' && v !== '') params.set(k, v);
+      const qs = params.toString();
+      window.location.href = `/terrenos/${qs ? `?${qs}` : ''}`;
+    });
+  }
+</script>

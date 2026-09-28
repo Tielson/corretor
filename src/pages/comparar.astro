@@ -1,0 +1,38 @@
+---
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { published } from '@/data';
+import { buildCatalogProps } from '@/lib/catalog-props';
+import { absoluteUrl } from '@/lib/seo';
+import Comparador from '@/components/react/Comparador';
+
+const { listings, cards } = await buildCatalogProps(published, {
+  referenceCity: site.cidadeReferencia.nome,
+  base: {},
+  path: '/terrenos/',
+  siteUrl: site.siteUrl,
+});
+---
+
+<Base
+  title="Comparar opções"
+  description="Compare até três terrenos ou lotes lado a lado: preço, área, localização, acesso, relevo, água, energia e condições."
+>
+  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <h1 class="type-display text-4xl">Comparar opções</h1>
+    <p class="mt-3 max-w-[62ch] text-grafite/80">
+      Até três anúncios lado a lado. Em empreendimentos, escolha se quer comparar o conjunto ou um lote específico. A seleção
+      fica salva só neste navegador.
+    </p>
+    <div class="mt-10">
+      <Comparador
+        client:load
+        listings={listings}
+        cards={cards}
+        referenceCity={site.cidadeReferencia.nome}
+        compareUrl={absoluteUrl('/comparar/')}
+      />
+      <noscript>Ative o JavaScript para usar a comparação.</noscript>
+    </div>
+  </div>
+</Base>

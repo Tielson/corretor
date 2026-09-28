@@ -1,0 +1,30 @@
+---
+import { site } from '@/config/site';
+
+interface Props {
+  tone?: 'mata' | 'cal';
+  class?: string;
+}
+
+const { tone = 'mata', class: className } = Astro.props;
+const color = tone === 'cal' ? 'text-cal' : 'text-mata';
+---
+
+<span class:list={['inline-flex items-center gap-2.5', color, className]}>
+  {
+    site.logo ? (
+      <img src={site.logo} alt="" width="36" height="36" class="size-9" />
+    ) : (
+      <svg viewBox="0 0 36 36" class="size-9 shrink-0" aria-hidden="true" fill="none">
+        <rect x="1" y="1" width="34" height="34" rx="9" stroke="currentColor" stroke-width="2" />
+        <path d="M6 25c4-4 7-5.5 11-5.5S24 23 30 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path d="M8 19.5c3-3.6 5.8-5 9-5 3.4 0 5.4 2.2 9.5 1.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".7" />
+        <path d="M12 13.5c1.8-2 3.4-2.9 5.2-2.9 2 0 3 1.1 5 .7" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".45" />
+      </svg>
+    )
+  }
+  <span class="flex min-w-0 flex-col whitespace-nowrap leading-none">
+    <span class="text-[1.02rem] font-[640] tracking-[-0.01em]" style="font-stretch:112%">{site.brand}</span>
+    <span class="type-data mt-1 text-[0.72rem] opacity-75">Terrenos e empreendimentos rurais</span>
+  </span>
+</span>

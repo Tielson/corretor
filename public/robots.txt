@@ -1,0 +1,6 @@
+# Catálogo demonstrativo: as páginas também emitem <meta name="robots" content="noindex">.
+# Ao publicar dados reais, ative site.indexable em src/config/site.ts (ver README).
+User-agent: *
+Allow: /
+
+Sitemap: https://example.com/sitemap-index.xml

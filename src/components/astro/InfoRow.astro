@@ -1,0 +1,39 @@
+---
+/**
+ * Linha de informação. Quando o valor não foi cadastrado, mostra
+ * "Informação não disponibilizada" e a ação "Perguntar ao corretor".
+ */
+import { messages } from '@/lib/whatsapp';
+import WaButton from './WaButton.astro';
+
+interface Props {
+  label: string;
+  value: string | null | undefined;
+  /** Contexto da pergunta ao corretor. */
+  listing?: { kind: 'terreno' | 'empreendimento'; title: string; code: string; url: string } | null;
+  note?: string | null;
+}
+
+const { label, value, listing = null, note } = Astro.props;
+const missing = value === null || value === undefined || value.trim() === '';
+const message = messages.duvida({ subject: label, listing, question: `Poderia me informar: ${label.toLowerCase()}?` });
+---
+
+<div class="grid gap-1 border-b border-border/70 py-3.5 sm:grid-cols-[13rem_1fr] sm:gap-6">
+  <dt class="text-[0.92rem] text-nevoa">{label}</dt>
+  <dd class="text-grafite">
+    {
+      missing ? (
+        <span class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span class="text-nevoa italic">Informação não disponibilizada</span>
+          <WaButton message={message} variant="quiet">Perguntar ao corretor</WaButton>
+        </span>
+      ) : (
+        <>
+          {value}
+          {note && <span class="mt-0.5 block text-[0.85rem] text-nevoa">{note}</span>}
+        </>
+      )
+    }
+  </dd>
+</div>

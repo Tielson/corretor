@@ -1,0 +1,36 @@
+---
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { publishedEmpreendimentos } from '@/data';
+import { buildCatalogProps } from '@/lib/catalog-props';
+import Catalogo from '@/components/react/catalog/Catalogo';
+import MapaCatalogo from '@/components/react/map/MapaCatalogo';
+import { catalogPoints } from '@/lib/map-points';
+
+const props = await buildCatalogProps(publishedEmpreendimentos, {
+  referenceCity: site.cidadeReferencia.nome,
+  base: { tipo: 'empreendimento' },
+  path: '/empreendimentos/',
+  siteUrl: site.siteUrl,
+});
+---
+
+<Base
+  title="Empreendimentos"
+  description="Empreendimentos rurais e urbanos com planta, lotes disponíveis, preço por lote e situação atualizada."
+>
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <h1 class="type-display text-4xl">Empreendimentos</h1>
+    <p class="mt-3 max-w-[60ch] text-grafite/80">
+      Loteamentos com vários lotes à venda. Preço e área de cada um consideram só os lotes disponíveis.
+      <a href="/terrenos/" class="text-mata underline decoration-areia decoration-2 underline-offset-4 hover:decoration-mata">
+        Ver todos os anúncios, inclusive terrenos avulsos
+      </a>
+    </p>
+    <div class="mt-8">
+      <Catalogo client:load {...props}>
+        <MapaCatalogo slot="map" client:only="react" points={catalogPoints(publishedEmpreendimentos)} />
+      </Catalogo>
+    </div>
+  </div>
+</Base>

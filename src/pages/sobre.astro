@@ -1,0 +1,61 @@
+---
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { messages } from '@/lib/whatsapp';
+import { waConfigured } from '@/lib/wa-site';
+import WaButton from '@/components/astro/WaButton.astro';
+
+const p = site.profissional;
+const msg = messages.naoEncontrou({ texto: 'Gostaria de conversar sobre terrenos na região.' });
+const hasPhone = waConfigured();
+---
+
+<Base title="Sobre o corretor" description={`Conheça ${p.nome}, atuação em ${site.regiao} com terrenos e empreendimentos rurais.`}>
+  <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+    <h1 class="type-display text-4xl">Sobre</h1>
+
+    <section class="mt-10 grid gap-10 md:grid-cols-[14rem_1fr]" aria-labelledby="quem-t">
+      <div class="grid aspect-square place-items-center rounded-2xl bg-areia-100 text-center text-[0.9rem] text-nevoa">
+        {p.foto ? <img src={p.foto} alt={`Foto de ${p.nome}`} class="size-full rounded-2xl object-cover" /> : 'Foto do corretor não fornecida'}
+      </div>
+      <div>
+        <h2 id="quem-t" class="text-2xl">{p.nome}</h2>
+        <p class="mt-1 text-nevoa">{p.creci ? `CRECI ${p.creci}` : 'Registro profissional (CRECI) não informado'}</p>
+        <p class="mt-5 max-w-[62ch] text-grafite/90">
+          {p.apresentacao ?? 'Apresentação ainda não fornecida. Aqui entram a trajetória do corretor, há quanto tempo atua na região e como é o atendimento.'}
+        </p>
+        <h3 class="mt-8 text-lg">Atuação local</h3>
+        <p class="mt-2 max-w-[62ch] text-grafite/90">
+          {p.atuacaoLocal ?? `Região de atuação: ${site.regiao}. Detalhes sobre municípios atendidos e tipos de imóvel ainda não fornecidos.`}
+        </p>
+        {
+          site.depoimentos.length > 0 && (
+            <>
+              <h3 class="mt-8 text-lg">Depoimentos</h3>
+              <ul class="mt-3 space-y-4">
+                {site.depoimentos.map((d) => (
+                  <li class="border-l-2 border-areia pl-4">
+                    <p>{d.texto}</p>
+                    <p class="mt-1 text-[0.85rem] text-nevoa">{d.autor}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </div>
+    </section>
+
+    <section id="contato" class="mt-16 scroll-mt-24 rounded-3xl border border-border bg-card p-6 sm:p-10" aria-labelledby="contato-t">
+      <h2 id="contato-t" class="text-2xl">Contato</h2>
+      <dl class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div><dt class="text-[0.85rem] text-nevoa">WhatsApp</dt><dd>{site.contato.telefoneExibicao || 'Não configurado neste ambiente demonstrativo'}</dd></div>
+        <div><dt class="text-[0.85rem] text-nevoa">E-mail</dt><dd>{site.contato.email || 'Não configurado'}</dd></div>
+        <div><dt class="text-[0.85rem] text-nevoa">Endereço</dt><dd>{site.contato.endereco ?? 'Não informado'}</dd></div>
+        <div><dt class="text-[0.85rem] text-nevoa">Horário de atendimento</dt><dd>{site.contato.horario ?? 'Não informado'}</dd></div>
+      </dl>
+      <WaButton message={msg} class="mt-6">Conversar no WhatsApp</WaButton>
+      {!hasPhone && <p class="mt-3 text-[0.85rem] text-nevoa">Sem telefone configurado, o botão copia a mensagem para você enviar depois.</p>}
+    </section>
+  </div>
+</Base>

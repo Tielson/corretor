@@ -1,0 +1,23 @@
+---
+/** Card de anúncio no HTML estático (a mesma view React usada no catálogo interativo). */
+import type { Listing } from '@/types/listing';
+import { toCardModel } from '@/lib/card';
+import { listingCardImage } from '@/lib/card-images';
+import { ListingCardView } from '@/components/react/ListingCardView';
+import FavoritoButton from '@/components/react/FavoritoButton';
+import CompararButton from '@/components/react/CompararButton';
+
+interface Props {
+  listing: Listing;
+  size?: 'default' | 'wide' | 'compact';
+  eager?: boolean;
+}
+
+const { listing, size = 'default', eager = false } = Astro.props;
+const card = toCardModel(listing, await listingCardImage(listing));
+---
+
+<ListingCardView card={card} size={size} eager={eager}>
+  <FavoritoButton slot="actions" client:visible id={listing.id} title={listing.title} />
+  <CompararButton slot="footer" client:visible id={listing.id} title={listing.title} />
+</ListingCardView>

@@ -1,0 +1,29 @@
+---
+/**
+ * Barra inferior compacta no celular (página de detalhe). Respeita a área
+ * segura da tela; o layout compensa a altura para não cobrir conteúdo.
+ */
+
+interface Props {
+  priceText: string;
+}
+
+const { priceText } = Astro.props;
+---
+
+<div
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-cal/95 backdrop-blur-md md:hidden"
+  style="padding-bottom: env(safe-area-inset-bottom, 0px)"
+  data-mobile-bar
+>
+  <div class="flex h-[4.5rem] items-center gap-2 px-3">
+    <p class="type-data min-w-0 flex-1 truncate text-[0.95rem] font-[600] text-mata">{priceText}</p>
+    <a
+      href="#visita"
+      class="inline-flex h-11 items-center rounded-[10px] border border-input px-3 text-[0.9rem] font-[560] text-mata"
+    >
+      Solicitar visita
+    </a>
+    <a href="#conversar" class="inline-flex h-11 items-center rounded-[10px] bg-mata px-4 text-[0.9rem] font-[600] text-cal">Conversar</a>
+  </div>
+</div>

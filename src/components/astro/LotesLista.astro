@@ -1,0 +1,49 @@
+---
+/**
+ * Lista estática dos lotes (HTML puro). É o conteúdo de base da seção de lotes
+ * e continua disponível sem JavaScript.
+ */
+import type { Empreendimento } from '@/types/listing';
+import { formatArea, formatAreaFull } from '@/lib/area';
+import { formatPrice } from '@/lib/money';
+import { formatDateShort } from '@/lib/date';
+import { lotLabel } from '@/lib/lots';
+import { LotStatusBadge } from '@/components/react/LotStatusBadge';
+
+interface Props {
+  listing: Empreendimento;
+}
+
+const { listing } = Astro.props;
+const lots = listing.lots;
+---
+
+<div class="overflow-x-auto rounded-xl border border-border" data-lenis-prevent>
+  <table class="w-full min-w-[40rem] text-left text-[0.92rem]">
+    <caption class="sr-only">Lotes do empreendimento {listing.title}</caption>
+    <thead class="bg-areia-100 text-[0.82rem] text-nevoa">
+      <tr>
+        <th scope="col" class="px-4 py-2.5 font-[560]">Lote</th>
+        <th scope="col" class="px-4 py-2.5 font-[560]">Área</th>
+        <th scope="col" class="px-4 py-2.5 font-[560]">Medidas</th>
+        <th scope="col" class="px-4 py-2.5 font-[560]">Preço</th>
+        <th scope="col" class="px-4 py-2.5 font-[560]">Situação</th>
+        <th scope="col" class="px-4 py-2.5 font-[560]">Atualizado</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border/70">
+      {
+        lots.map((lot) => (
+          <tr class:list={[lot.status === 'vendido' && 'text-nevoa']}>
+            <th scope="row" class="px-4 py-2.5 font-[560] text-grafite">{lotLabel(lot)}</th>
+            <td class="type-data px-4 py-2.5" title={formatAreaFull(lot.areaM2)}>{formatArea(lot.areaM2)}</td>
+            <td class="type-data px-4 py-2.5">{lot.dimensions ?? <span class="italic text-nevoa">Não informadas</span>}</td>
+            <td class="type-data px-4 py-2.5">{formatPrice(lot.priceCents)}</td>
+            <td class="px-4 py-2.5"><LotStatusBadge status={lot.status} /></td>
+            <td class="type-data px-4 py-2.5 text-nevoa">{formatDateShort(lot.updatedAt)}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

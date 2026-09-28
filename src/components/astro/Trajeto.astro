@@ -1,0 +1,94 @@
+---
+/**
+ * Trajeto até o terreno, montado só com o que foi cadastrado:
+ * cidade de referência -> rodovia (asfalto) -> estrada de terra -> chegada.
+ */
+import type { Listing } from '@/types/listing';
+import { site } from '@/config/site';
+import { distanceToReference } from '@/lib/filters';
+import { formatMinutes } from '@/lib/date';
+
+interface Props {
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+const { access, location } = listing;
+const ref = site.cidadeReferencia;
+const refDistance = location.distances.find((d) => d.label.toLowerCase().includes(ref.nome.toLowerCase())) ?? null;
+const refKm = distanceToReference(listing, ref.nome);
+const dirt = access.dirtRoadKm;
+const nf = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+
+let origemBody: string | null = null;
+if (refKm !== null) {
+  origemBody = `${nf(refKm)} km`;
+  if (refDistance?.minutes) origemBody += `, cerca de ${formatMinutes(refDistance.minutes)}`;
+}
+
+type StepKind = 'origem' | 'asfalto' | 'terra' | 'chegada';
+const steps: Array<{ kind: StepKind; title: string; body: string | null; foot: string | null }> = [
+  {
+    kind: 'origem',
+    title: `Saindo de ${ref.nome}`,
+    body: origemBody,
+    foot: refDistance ? `${refDistance.nature === 'estimativa' ? 'Estimativa' : 'Medida'}: ${refDistance.source}` : null,
+  },
+  { kind: 'asfalto', title: 'Rodovia', body: access.highway, foot: null },
+  {
+    kind: dirt === 0 ? 'asfalto' : 'terra',
+    title: dirt === 0 ? 'Estrada de terra' : 'Estrada de terra',
+    body: dirt === null ? null : dirt === 0 ? 'Não há: acesso todo asfaltado' : `${nf(dirt)} km`,
+    foot: access.conditions,
+  },
+  {
+    kind: 'chegada',
+    title: 'Chegada',
+    body: access.arrivalPoint,
+    foot: location.precision === 'aproximada' ? 'Localização aproximada: confirme o ponto com o corretor.' : null,
+  },
+];
+---
+
+<ol class="grid md:grid-cols-4 md:gap-4">
+  {
+    steps.map((s, i) => {
+      const next = steps[i + 1];
+      return (
+        <li class="relative flex gap-4 pb-7 last:pb-0 md:block md:pb-0">
+          {next && (
+            <span
+              aria-hidden="true"
+              class:list={[
+                'absolute left-4 top-9 bottom-1 w-0 border-l-[3px] md:left-11 md:right-[-0.75rem] md:top-4 md:bottom-auto md:w-auto md:border-l-0 md:border-t-[3px]',
+                next.kind === 'terra' ? 'border-dashed border-terra/70' : 'border-solid border-mata/60',
+              ]}
+            />
+          )}
+          <span
+            aria-hidden="true"
+            class:list={[
+              'relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2 text-[0.8rem] font-[640] md:mb-4',
+              s.kind === 'chegada' ? 'border-terra bg-terra text-cal' : 'border-mata bg-cal text-mata',
+            ]}
+          >
+            {i + 1}
+          </span>
+          <div class="min-w-0">
+            <p class="text-[0.85rem] text-nevoa">{s.title}</p>
+            {s.body ? (
+              <p class="type-data mt-0.5 text-[1.05rem] font-[560] text-grafite">{s.body}</p>
+            ) : (
+              <p class="mt-0.5 text-[0.95rem] italic text-nevoa">Informação não disponibilizada</p>
+            )}
+            {s.foot && <p class="mt-1 text-[0.85rem] text-nevoa">{s.foot}</p>}
+          </div>
+        </li>
+      );
+    })
+  }
+</ol>
+<p class="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-[0.8rem] text-nevoa">
+  <span class="flex items-center gap-2"><span class="inline-block w-6 border-t-[3px] border-mata/60" aria-hidden="true"></span>Asfalto</span>
+  <span class="flex items-center gap-2"><span class="inline-block w-6 border-t-[3px] border-dashed border-terra/70" aria-hidden="true"></span>Estrada de terra</span>
+</p>

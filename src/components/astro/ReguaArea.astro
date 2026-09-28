@@ -1,0 +1,53 @@
+---
+/**
+ * Régua de área: m², hectares e uma noção de escala em campos de futebol
+ * oficiais (105 × 68 m). Conversão factual, sem arredondar para mais.
+ */
+import { FOOTBALL_FIELD, describeFootballFields, formatAreaFull, toFootballFields } from '@/lib/area';
+
+interface Props {
+  minM2: number;
+  maxM2?: number;
+}
+
+const { minM2, maxM2 = minM2 } = Astro.props;
+const isRange = maxM2 !== minM2;
+const ref = maxM2;
+const fields = toFootballFields(ref);
+const description = describeFootballFields(ref);
+const shown = Math.min(Math.ceil(fields), 12);
+const full = Math.floor(Math.min(fields, 12));
+const partial = fields < 12 ? fields - Math.floor(fields) : 0;
+---
+
+<div class="rounded-2xl bg-areia-100 p-5">
+  <p class="text-[0.85rem] text-nevoa">{isRange ? 'Área dos lotes disponíveis' : 'Área total'}</p>
+  <p class="type-data mt-1 text-2xl font-[600] text-mata">
+    {isRange ? `${formatAreaFull(minM2)} a ${formatAreaFull(maxM2)}` : formatAreaFull(minM2)}
+  </p>
+  {
+    description && (
+      <div class="mt-4">
+        <div class="flex flex-wrap gap-1.5" aria-hidden="true">
+          {Array.from({ length: shown }, (_, i) => {
+            const fill = i < full ? 1 : partial;
+            return (
+              <svg viewBox="0 0 105 68" class="h-7 w-auto">
+                <rect x="1" y="1" width="103" height="66" rx="3" fill="none" stroke="#3f6b45" stroke-width="2" />
+                <rect x="1" y="1" width={Math.max(0, 103 * fill)} height="66" rx="3" fill="#3f6b45" opacity="0.22" />
+                <line x1="52.5" y1="1" x2="52.5" y2="67" stroke="#3f6b45" stroke-width="1.5" />
+                <circle cx="52.5" cy="34" r="9" fill="none" stroke="#3f6b45" stroke-width="1.5" />
+              </svg>
+            );
+          })}
+          {fields > 12 && <span class="type-data self-center text-sm text-nevoa">+{Math.round(fields - 12)}</span>}
+        </div>
+        <p class="mt-2 text-[0.9rem] text-grafite/85">
+          {isRange ? 'O maior lote equivale a ' : 'Equivale a '}
+          {description.replace('cerca de ', 'cerca de ')}
+          <span class="text-nevoa"> ({FOOTBALL_FIELD.widthM} × {FOOTBALL_FIELD.lengthM} m cada).</span>
+        </p>
+      </div>
+    )
+  }
+</div>

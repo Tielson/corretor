@@ -1,0 +1,21 @@
+---
+import Base from '@/layouts/Base.astro';
+---
+
+<Base title="Página não encontrada" description="O endereço procurado não existe ou o anúncio foi removido do catálogo.">
+  <section class="mx-auto max-w-3xl px-4 py-24 sm:px-6">
+    <p class="type-data text-nevoa">Erro 404</p>
+    <h1 class="type-display mt-3 text-3xl sm:text-4xl">Este endereço não leva a nenhum terreno</h1>
+    <p class="mt-6 max-w-xl text-lg text-grafite/80">
+      O anúncio pode ter sido vendido, retirado do catálogo ou o link pode estar incompleto. Os demais terrenos continuam disponíveis no catálogo.
+    </p>
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a href="/terrenos/" class="inline-flex h-12 items-center rounded-[10px] bg-mata px-5 font-[560] text-cal hover:bg-mata-900">
+        Ver o catálogo
+      </a>
+      <a href="/" class="inline-flex h-12 items-center rounded-[10px] border border-input px-5 font-[560] text-mata hover:bg-areia-100">
+        Voltar ao início
+      </a>
+    </div>
+  </section>
+</Base>

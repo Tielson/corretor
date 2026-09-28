@@ -1,0 +1,164 @@
+[
+  {
+    "file": "hero-serra.jpg",
+    "width": 2000,
+    "height": 1333,
+    "photographer": "Rafael Vianna Croffi",
+    "photographerUrl": "https://unsplash.com/@rvcroffi",
+    "photoUrl": "https://unsplash.com/photos/mMIPfeZzaH0",
+    "alt": "Encostas verdes com pastagens e araucária, montanhas ao fundo sob céu azul com nuvens"
+  },
+  {
+    "file": "aerea-sitio.jpg",
+    "width": 2000,
+    "height": 1125,
+    "photographer": "Matheus Frade",
+    "photographerUrl": "https://unsplash.com/@matheusfrade",
+    "photoUrl": "https://unsplash.com/photos/JiIgMB6yAGo",
+    "alt": "Vista aérea de pasto verde em colina cortado por estrada de terra vermelha"
+  },
+  {
+    "file": "aerea-loteamento.jpg",
+    "width": 2000,
+    "height": 1500,
+    "photographer": "Rique Drone",
+    "photographerUrl": "https://unsplash.com/@riquedrone",
+    "photoUrl": "https://unsplash.com/photos/27nVk3z17xM",
+    "alt": "Vista aérea de colinas com lavouras, cafezais em fileiras e estradas de terra"
+  },
+  {
+    "file": "estrada-terra.jpg",
+    "width": 2000,
+    "height": 1333,
+    "photographer": "Wallace Fonseca",
+    "photographerUrl": "https://unsplash.com/@waally",
+    "photoUrl": "https://unsplash.com/photos/NQqsQCCYuaA",
+    "alt": "Estrada de terra entre cercas e eucaliptos, com morros verdes ao fundo"
+  },
+  {
+    "file": "cerca-pasto.jpg",
+    "width": 2000,
+    "height": 1333,
+    "photographer": "Vinícius Costa",
+    "photographerUrl": "https://unsplash.com/@viniciusnevescosta",
+    "photoUrl": "https://unsplash.com/photos/RecWI5O28UE",
+    "alt": "Cerca de mourões e arame em pasto verde, com morros e mata ao fundo"
+  },
+  {
+    "file": "riacho.jpg",
+    "width": 2000,
+    "height": 1500,
+    "photographer": "Bárbara Fróes",
+    "photographerUrl": "https://unsplash.com/@barbarafroes",
+    "photoUrl": "https://unsplash.com/photos/SfgOAAsOXWY",
+    "alt": "Riacho correndo entre pedras, cercado por vegetação nativa"
+  },
+  {
+    "file": "araucarias.jpg",
+    "width": 2000,
+    "height": 1499,
+    "photographer": "Cecilia Skaf",
+    "photographerUrl": "https://unsplash.com/@ceciliaskaf",
+    "photoUrl": "https://unsplash.com/photos/hJ6PXEW3eqk",
+    "alt": "Araucária no alto de um morro com pasto verde e céu azul com nuvens"
+  },
+  {
+    "file": "neblina-serra.jpg",
+    "width": 2000,
+    "height": 1500,
+    "photographer": "Jude Infantini",
+    "photographerUrl": "https://unsplash.com/@judowoodo_",
+    "photoUrl": "https://unsplash.com/photos/peHDKDWUfXs",
+    "alt": "Neblina da manhã cobrindo o vale entre montanhas arborizadas"
+  },
+  {
+    "file": "chale-montanha.jpg",
+    "width": 2000,
+    "height": 1356,
+    "photographer": "Florian Cordier",
+    "photographerUrl": "https://unsplash.com/@floriancordier",
+    "photoUrl": "https://unsplash.com/photos/jxZzdIphzoM",
+    "alt": "Chalé de madeira em campo aberto, com árvores na encosta ao fundo"
+  },
+  {
+    "file": "pasto-cavalos.jpg",
+    "width": 2000,
+    "height": 1335,
+    "photographer": "Mateus Campos Felipe",
+    "photographerUrl": "https://unsplash.com/@matcfelipe",
+    "photoUrl": "https://unsplash.com/photos/4SXAbm_vyFw",
+    "alt": "Cavalos pastando em pasto ensolarado atrás de cerca de arame"
+  },
+  {
+    "file": "lago-sitio.jpg",
+    "width": 2000,
+    "height": 1334,
+    "photographer": "Jan Allbeck",
+    "photographerUrl": "https://unsplash.com/@allbeck",
+    "photoUrl": "https://unsplash.com/photos/gm2_FCBT9-k",
+    "alt": "Lago em propriedade rural cercado por árvores e pastos, com morros ao fundo"
+  },
+  {
+    "file": "cafezal.jpg",
+    "width": 2000,
+    "height": 1125,
+    "photographer": "Dhan Sugui",
+    "photographerUrl": "https://unsplash.com/@dhansugui",
+    "photoUrl": "https://unsplash.com/photos/AgPj0maIEEs",
+    "alt": "Vale com cafezais em fileiras nas encostas e casas entre as montanhas"
+  },
+  {
+    "file": "por-do-sol-serra.jpg",
+    "width": 2000,
+    "height": 1586,
+    "photographer": "Eliézer Fernandes",
+    "photographerUrl": "https://unsplash.com/@lii_raw",
+    "photoUrl": "https://unsplash.com/photos/MQUO4Yt8SB4",
+    "alt": "Pôr do sol sobre colinas verdes com pastagens e estrada de terra"
+  },
+  {
+    "file": "terreno-urbano.jpg",
+    "width": 2000,
+    "height": 1181,
+    "photographer": "Andrew V",
+    "photographerUrl": "https://unsplash.com/@echoez",
+    "photoUrl": "https://unsplash.com/photos/qFg4h4tERtU",
+    "alt": "Terreno vazio com grama seca entre muros, com casas ao fundo"
+  },
+  {
+    "file": "bairro-residencial.jpg",
+    "width": 2000,
+    "height": 1330,
+    "photographer": "Feliphe Schiarolli",
+    "photographerUrl": "https://unsplash.com/@flpschi",
+    "photoUrl": "https://unsplash.com/photos/Ecf-AYLNm4o",
+    "alt": "Rua de cidade pequena com casas antigas, postes e árvores"
+  },
+  {
+    "file": "cidade-aerea.jpg",
+    "width": 2000,
+    "height": 1500,
+    "photographer": "Sofia Khlebnikov",
+    "photographerUrl": "https://unsplash.com/@sofiaken",
+    "photoUrl": "https://unsplash.com/photos/bUMtY6KfTSk",
+    "alt": "Cidade pequena com igreja e casas ao pé de uma serra coberta de mata"
+  },
+  {
+    "file": "trilha-mata.jpg",
+    "width": 2000,
+    "height": 1330,
+    "photographer": "Myles Bloomfield",
+    "photographerUrl": "https://unsplash.com/@loomydoons",
+    "photoUrl": "https://unsplash.com/photos/xeTAoNgmVEE",
+    "alt": "Trilha de terra em meio a uma mata densa e verde"
+  },
+  {
+    "file": "nascente.jpg",
+    "width": 2000,
+    "height": 1329,
+    "photographer": "Rafael Vianna Croffi",
+    "photographerUrl": "https://unsplash.com/@rvcroffi",
+    "photoUrl": "https://unsplash.com/photos/4Fp3ZUNcJnI",
+    "alt": "Pequena cachoeira descendo entre pedras no meio da mata"
+  }
+]

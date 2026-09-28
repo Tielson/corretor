@@ -1,0 +1,83 @@
+---
+/**
+ * Resumo para decidir: preço (total, "a partir de" ou sob consulta), área,
+ * disponibilidade e as duas ações principais. Fixo na lateral no desktop.
+ */
+import type { Listing } from '@/types/listing';
+import { isEmpreendimento } from '@/types/listing';
+import { priceInfo, areaInfo } from '@/lib/listing';
+import { formatCents } from '@/lib/money';
+import { formatArea, formatAreaRange } from '@/lib/area';
+import { summarizeLots } from '@/lib/lots';
+import { termsOf } from '@/lib/card';
+import { formatDateLong } from '@/lib/date';
+import { LotBar } from '@/components/react/LotBar';
+
+interface Props {
+  listing: Listing;
+  class?: string;
+}
+
+const { listing, class: className } = Astro.props;
+const p = priceInfo(listing);
+const a = areaInfo(listing);
+const terms = termsOf(listing);
+const noun = listing.kind === 'empreendimento' ? 'este empreendimento' : 'este terreno';
+---
+
+<div class:list={['rounded-2xl border border-border bg-card p-5', className]}>
+  <p class="text-[0.85rem] text-nevoa">
+    {p.mode === 'total' ? 'Preço total' : p.mode === 'a_partir_de' ? 'Lotes disponíveis a partir de' : 'Preço'}
+  </p>
+  <p class:list={['type-data font-[640] text-mata', p.cents === null ? 'text-xl' : 'text-[2rem] leading-tight']}>
+    {p.cents === null ? 'Preço sob consulta' : formatCents(p.cents)}
+  </p>
+  {
+    terms && (
+      <ul class="mt-2 space-y-0.5 text-[0.85rem] text-nevoa">
+        {terms.downPayment && <li>{terms.downPayment}</li>}
+        {terms.installments && <li>{terms.installments}</li>}
+      </ul>
+    )
+  }
+
+  <dl class="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-4 text-[0.9rem]">
+    <div>
+      <dt class="text-[0.8rem] text-nevoa">{isEmpreendimento(listing) ? 'Área dos lotes' : 'Área'}</dt>
+      <dd class="type-data font-[560]">
+        {a ? (a.isRange ? formatAreaRange(a) : formatArea(a.minM2)) : 'Sem lotes disponíveis'}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-[0.8rem] text-nevoa">Código</dt>
+      <dd class="type-data font-[560]">{listing.code}</dd>
+    </div>
+  </dl>
+
+  {
+    isEmpreendimento(listing) ? (
+      <LotBar summary={summarizeLots(listing.lots)} className="mt-4" />
+    ) : (
+      <p class="mt-4 text-[0.9rem] text-grafite/85">
+        {listing.availability ?? 'Disponibilidade não informada'}
+      </p>
+    )
+  }
+  <p class="mt-1 text-[0.78rem] text-nevoa">Atualizado em {formatDateLong(listing.updatedAt)}</p>
+
+  <div class="mt-5 flex flex-col gap-2.5">
+    <a
+      href="#conversar"
+      class="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-mata px-5 py-2 text-center font-[600] leading-snug text-cal hover:bg-mata-900"
+    >
+      Conversar sobre {noun}
+    </a>
+    <a
+      href="#visita"
+      class="inline-flex h-12 items-center justify-center rounded-[10px] border border-input px-5 font-[560] text-mata hover:border-mata hover:bg-areia-100"
+    >
+      Solicitar uma visita
+    </a>
+  </div>
+  <slot />
+</div>
